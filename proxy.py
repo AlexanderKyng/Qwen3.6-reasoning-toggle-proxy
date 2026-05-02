@@ -8,7 +8,7 @@ import uvicorn
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8080")
-REAL_MODEL = os.getenv("REAL_MODEL", "qwen3.5-27b")
+REAL_MODEL = os.getenv("REAL_MODEL", "qwen3.6-27b")
 LISTEN_HOST = os.getenv("LISTEN_HOST", "0.0.0.0")
 LISTEN_PORT = int(os.getenv("LISTEN_PORT", "9999"))
 
@@ -22,44 +22,33 @@ class ModelProfile:
     min_p: float
     presence_penalty: float
     repetition_penalty: float
+    preserve_thinking: bool
 
 
 MODEL_MAP: dict[str, ModelProfile] = {
-    "qwen3.5-27b-thinking": ModelProfile(
+    "Qwen3.6-thinking": ModelProfile(
         enable_thinking=True,
-        temperature=1.0,
-        top_p=0.95,
-        top_k=20,
-        min_p=0.0,
-        presence_penalty=1.5,
-        repetition_penalty=1.0,
+        temperature=1.0, top_p=0.95, top_k=20, min_p=0.0,
+        presence_penalty=1.5, repetition_penalty=1.0,
+        preserve_thinking=False
     ),
-    "qwen3.5-27b-thinking-coding": ModelProfile(
+    "Qwen3.6-thinking-coding": ModelProfile(
         enable_thinking=True,
-        temperature=0.6,
-        top_p=0.95,
-        top_k=20,
-        min_p=0.0,
-        presence_penalty=0.0,
-        repetition_penalty=1.0,
+        temperature=0.6, top_p=0.95, top_k=20, min_p=0.0,
+        presence_penalty=0.0, repetition_penalty=1.0,
+        preserve_thinking=True
     ),
-    "qwen3.5-27b-instruct": ModelProfile(
+    "Qwen3.6-instruct": ModelProfile(
         enable_thinking=False,
-        temperature=0.7,
-        top_p=0.8,
-        top_k=20,
-        min_p=0.0,
-        presence_penalty=1.5,
-        repetition_penalty=1.0,
+        temperature=0.7, top_p=0.8, top_k=20, min_p=0.0,
+        presence_penalty=1.5, repetition_penalty=1.0,
+        preserve_thinking=False
     ),
-    "qwen3.5-27b-instruct-reasoning": ModelProfile(
+    "Qwen3.6-instruct-reasoning": ModelProfile(
         enable_thinking=False,
-        temperature=1.0,
-        top_p=1.0,
-        top_k=40,
-        min_p=0.0,
-        presence_penalty=2.0,
-        repetition_penalty=1.0,
+        temperature=1.0, top_p=0.95, top_k=20, min_p=0.0,
+        presence_penalty=1.5, repetition_penalty=1.0,
+        preserve_thinking=False
     ),
 }
 
@@ -78,7 +67,14 @@ def _patch_body(body: dict, virtual_model: str) -> dict:
         return body
 
     body["model"] = REAL_MODEL
-    body["chat_template_kwargs"] = {"enable_thinking": profile.enable_thinking}
+
+    template_kwargs = {}
+    if profile.preserve_thinking:
+        template_kwargs["preserve_thinking"] = True
+    else:
+        template_kwargs["enable_thinking"] = profile.enable_thinking
+
+    body["chat_template_kwargs"] = template_kwargs
 
     defaults = {
         "temperature": profile.temperature,
@@ -104,7 +100,7 @@ async def list_models():
                 "object": "model",
                 "created": 1700000000,
                 "owned_by": "local",
-                "description": f"thinking={'on' if p.enable_thinking else 'off'} | temp={p.temperature}",
+                "description": f"thinking={'on' if p.enable_thinking else 'off'} | temp={p.temperature} | preserve_thinking={'on' if p.preserve_thinking else 'off'}",
             }
             for name, p in MODEL_MAP.items()
         ],
