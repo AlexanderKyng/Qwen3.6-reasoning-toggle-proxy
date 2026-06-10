@@ -1,5 +1,12 @@
 # Qwen3.6 Reasoning Toggle Proxy
 
+> **Backend:** llama.cpp / ik_llama.cpp — This branch is for use with [llama.cpp](https://github.com/ggerganov/llama.cpp) servers.
+>
+> Need vLLM or SGLang instead? Switch branches:
+> ```bash
+> git checkout vLLM/SGLang
+> ```
+
 OpenAI-compatible proxy for Qwen3.6 models with dynamic configuration of thinking (reasoning) capabilities.
 Toggle or disable Qwen's thinking dynamically by just changing the selected model WITHOUT changing the backend configuration.
 
@@ -15,10 +22,10 @@ Toggle or disable Qwen's thinking dynamically by just changing the selected mode
 
 | Model | Thinking | Temperature | Use Case |
 |-------|----------|-------------|----------|
-| `qwen3.6-thinking` | On | 1.0 | General reasoning |
-| `qwen3.6-thinking-coding` | On | 0.6 | Code generation |
-| `qwen3.6-instruct` | Off | 0.7 | Standard instruct |
-| `qwen3.6-instruct-reasoning` | Off | 1.0 | Reasoning without thought blocks |
+| `Qwen3.6-thinking` | On | 1.0 | General reasoning |
+| `Qwen3.6-thinking-coding` | On | 0.6 | Code generation |
+| `Qwen3.6-instruct` | Off | 0.7 | Standard instruct |
+| `Qwen3.6-instruct-reasoning` | Off | 1.0 | Reasoning without thought blocks |
 
 As of May 2nd, 2026, I discovered that Qwen3.6 ships with a new `preserve_thinking` kwarg, which preserves the reasoning traces of the previous conversations. It was shown to increase the model's capacities on long reasoning and coding sessions so I enabled it on the "Qwen3.6-thinking-coding" virtual model.
 
@@ -65,7 +72,7 @@ curl http://localhost:9999/v1/models
 curl http://localhost:9999/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen3.6-27b-thinking",
+    "model": "Qwen3.6-thinking",
     "messages": [{"role": "user", "content": "Hello"}],
     "stream": false
   }'
