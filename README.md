@@ -4,7 +4,7 @@
 >
 > Need vLLM or SGLang instead? Switch branches:
 > ```bash
-> git checkout vLLM/SGLang
+> git checkout master
 > ```
 
 OpenAI-compatible proxy for Qwen3.6 models with dynamic configuration of thinking (reasoning) capabilities.
