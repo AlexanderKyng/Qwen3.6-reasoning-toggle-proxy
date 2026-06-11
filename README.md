@@ -1,24 +1,30 @@
 # Qwen3.6 Reasoning Toggle Proxy
 
+> **Backend:** vLLM / SGLang — This branch is for use with [vLLM](https://github.com/vllm-project/vllm) or [SGLang](https://github.com/sgl-project/sglang) servers.
+>
+> Need llama.cpp instead? Switch branches:
+> ```bash
+> git checkout llama.cpp/ik_llama.cpp
+> ```
+
 OpenAI-compatible proxy for Qwen3.6 models with dynamic configuration of thinking (reasoning) capabilities.
 Toggle or disable Qwen's thinking dynamically by just changing the selected model WITHOUT changing the backend configuration.
 
 ## Features
 
-- Exposes 4 virtual models with different reasoning configurations
+- Exposes 3 virtual models with different reasoning configurations
 - OpenAI API compatible (`/v1/chat/completions`, `/v1/models`)
 - Compatible with Open-WebUI, OpenCode, Codex CLI, Continue, etc..
 - Streaming support (SSE)
-- Environment variable configuration
+- Non-standard sampling params (`top_k`, `min_p`, `repetition_penalty`) forwarded via vLLM's `extra_body`
 
 ## Virtual Models
 
 | Model | Thinking | Temperature | Use Case |
 |-------|----------|-------------|----------|
-| `qwen3.6-thinking` | On | 1.0 | General reasoning |
-| `qwen3.6-thinking-coding` | On | 0.6 | Code generation |
-| `qwen3.6-instruct` | Off | 0.7 | Standard instruct |
-| `qwen3.6-instruct-reasoning` | Off | 1.0 | Reasoning without thought blocks |
+| `Qwen3.6-thinking` | On | 1.0 | General reasoning |
+| `Qwen3.6-thinking-coding` | On | 0.6 | Code generation |
+| `Qwen3.6-instruct` | Off | 0.7 | Standard instruct |
 
 As of May 2nd, 2026, I discovered that Qwen3.6 ships with a new `preserve_thinking` kwarg, which preserves the reasoning traces of the previous conversations. It was shown to increase the model's capacities on long reasoning and coding sessions so I enabled it on the "Qwen3.6-thinking-coding" virtual model.
 
@@ -32,12 +38,12 @@ pip install -e .
 
 ## Configuration
 
-Copy `.env.example` to `.env` and configure:
+Edit the config variables at the top of `proxy.py`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BACKEND_URL` | `http://localhost:8080` | llama.cpp/llama-server URL |
-| `REAL_MODEL` | `qwen3.6-27b` | Actual model name on backend |
+| `BACKEND_URL` | `http://localhost:8080` | vLLM / SGLang server address |
+| `REAL_MODEL` | `qwen3.6-27b` | Actual model identifier loaded by vLLM |
 | `LISTEN_HOST` | `0.0.0.0` | Proxy listen host |
 | `LISTEN_PORT` | `9999` | Proxy listen port |
 
@@ -65,7 +71,7 @@ curl http://localhost:9999/v1/models
 curl http://localhost:9999/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen3.6-27b-thinking",
+    "model": "Qwen3.6-thinking",
     "messages": [{"role": "user", "content": "Hello"}],
     "stream": false
   }'
