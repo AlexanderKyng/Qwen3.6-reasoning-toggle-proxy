@@ -245,6 +245,7 @@ async def generic_proxy(request: Request, path: str):
 
 
 if __name__ == "__main__":
+    print("Launching server for vLLM/SGLang", flush=True)
     uvicorn.run(
         app,
         host=LISTEN_HOST,
